@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "644224410872",
+    "firebase_url": "https://intragram-fdfef.firebaseio.com",
+    "project_id": "intragram-fdfef",
+    "storage_bucket": "intragram-fdfef.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:644224410872:android:9b66d37c64b609f5d7c70d",
+        "android_client_info": {
+          "package_name": "com.amansahu.intragram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "644224410872-l0r7aljqicb2clgck8ds3umgtc5h2569.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.amansahu.intragram",
+            "certificate_hash": "e886f386a91ea32ffd5e7d8b421ecd9e5794ab0d"
+          }
+        },
+        {
+          "client_id": "644224410872-j98ank420agelaufvfhcpkkhqu9u4j9k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjbqCs_Gjoh4180HCHsPjoRLeURTKgsQw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "644224410872-j98ank420agelaufvfhcpkkhqu9u4j9k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
