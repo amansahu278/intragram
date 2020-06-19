@@ -238,6 +238,9 @@ class _UploadState extends State<Upload> {
   }
 
   compressImage() async {
+    /*
+    Or use the image quality under imagepicker
+    * */
     final tempDir = await getTemporaryDirectory();
     final path = tempDir.path;
     print(path);
