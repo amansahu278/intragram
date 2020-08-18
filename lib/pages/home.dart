@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +12,12 @@ import 'package:intragram/pages/search.dart';
 import 'package:intragram/pages/timeline.dart';
 import 'package:intragram/pages/upload.dart';
 
+final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn googleSignIn = GoogleSignIn();
+GoogleSignInAccount googleSignInAccount;
 final usersRef = Firestore.instance.collection('users');
 final postsRef = Firestore.instance.collection('posts');
+final commentsRef = Firestore.instance.collection("comments");
 final StorageReference storageRef = FirebaseStorage.instance.ref();
 final timestamp = DateTime.now();
 User currentUser;
@@ -28,24 +32,48 @@ class _HomeState extends State<Home> {
   PageController _pageController;
   int pageIndex = 0;
 
-  login() {
-    googleSignIn.signIn();
+  login() async {
+    googleSignInAccount = await googleSignIn.signIn();
   }
 
   logout() {
+    _auth.signOut();
     googleSignIn.signOut();
   }
 
-  createUserInFirestore() async {
+  Future<String> signInWithGoogle() async {
+//    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
+    final GoogleSignInAuthentication googleSignInAuthentication =
+        await googleSignInAccount.authentication;
 
+    final AuthCredential credential = GoogleAuthProvider.getCredential(
+      accessToken: googleSignInAuthentication.accessToken,
+      idToken: googleSignInAuthentication.idToken,
+    );
+
+    final AuthResult authResult = await _auth.signInWithCredential(credential);
+    final FirebaseUser user = authResult.user;
+
+    assert(!user.isAnonymous);
+    assert(await user.getIdToken() != null);
+
+    final FirebaseUser currentUser = await _auth.currentUser();
+    assert(user.uid == currentUser.uid);
+
+    return 'signInWithGoogle succeeded: $user';
+  }
+
+  createUserInFirestore() async {
     //Check if user exists
+    await signInWithGoogle();
     GoogleSignInAccount user = googleSignIn.currentUser;
     DocumentSnapshot doc = await usersRef.document(user.id).get();
 
     //If doesnt exist, then redirect to create account page
-    if(!doc.exists){
+    if (doc == null) {
       //get username from create account, use it to make a new document in users collection
-      final String username = await Navigator.of(context).push(MaterialPageRoute(builder: (context) => CreateAccount()));
+      final String username = await Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => CreateAccount()));
 
       usersRef.document(user.id).setData({
         "id": user.id,
@@ -56,6 +84,7 @@ class _HomeState extends State<Home> {
         "bio": "",
         "timestamp": timestamp
       });
+      print("data set\n");
       doc = await usersRef.document(user.id).get();
     }
     currentUser = User.fromDocument(doc);
@@ -82,6 +111,7 @@ class _HomeState extends State<Home> {
 
     // When user signs in
     googleSignIn.onCurrentUserChanged.listen((account) {
+      print(account);
       handleSignIn(account);
     }, onError: (err) {
       print('Error: $err');

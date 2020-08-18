@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intragram/models/user.dart';
+import 'package:intragram/pages/comments.dart';
 import 'package:intragram/pages/home.dart';
 import 'package:intragram/widgets/custom_image.dart';
 import 'package:intragram/widgets/progress.dart';
@@ -165,7 +166,8 @@ class _PostState extends State<Post> {
                 padding: EdgeInsets.only(right: 20.0)
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: () => showComments(context,
+                  postId: postId, ownerId: ownerId, mediaUrl: mediaUrl),
               child: Icon(
                 Icons.chat,
                 size: 28.0,
@@ -250,5 +252,16 @@ class _PostState extends State<Post> {
         });
       });
     }
+  }
+
+  showComments(BuildContext context,
+      {String postId, String ownerId, String mediaUrl}) {
+    Navigator.push(context, MaterialPageRoute(builder: (constext) {
+      return Comments(
+        postId: postId,
+        postOwnerId: ownerId,
+        postMediaUrl: mediaUrl,
+      );
+    }));
   }
 }
