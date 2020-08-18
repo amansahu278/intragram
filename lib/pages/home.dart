@@ -18,6 +18,8 @@ GoogleSignInAccount googleSignInAccount;
 final usersRef = Firestore.instance.collection('users');
 final postsRef = Firestore.instance.collection('posts');
 final activityFeedRef = Firestore.instance.collection('feed');
+final followersRef = Firestore.instance.collection('followers');
+final followingRef = Firestore.instance.collection('following');
 final commentsRef = Firestore.instance.collection("comments");
 final StorageReference storageRef = FirebaseStorage.instance.ref();
 final timestamp = DateTime.now();
