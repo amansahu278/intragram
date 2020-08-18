@@ -5,10 +5,11 @@ AppBar header(context, { bool isAppTitle = false, String titleText, bool removeB
     automaticallyImplyLeading: !removeBack,
     title: Text(
       isAppTitle ? "Intragram" : titleText,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
         color: Colors.white,
         fontFamily: isAppTitle ? "Signatra" : "",
-          fontSize: isAppTitle ? 50.0 : 20,
+        fontSize: isAppTitle ? 50.0 : 20,
       ),
     ),
     centerTitle: true,

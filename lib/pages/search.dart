@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intragram/models/user.dart';
+import 'package:intragram/pages/profile.dart';
 import 'package:intragram/widgets/progress.dart';
 
 class Search extends StatefulWidget {
@@ -104,18 +105,18 @@ class UserResult extends StatelessWidget {
         child: Column(
           children: <Widget>[
             GestureDetector(
-                onTap: () {},
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.grey,
-                    backgroundImage: CachedNetworkImageProvider(user.photoUrl),
-                  ),
-                  title: Text(
-                    user.displayName,
-                    style: TextStyle(
-                        color: Colors.white, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(
+                onTap: () => showProfile(context, profileId: user.id),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.grey,
+                  backgroundImage: CachedNetworkImageProvider(user.photoUrl),
+                ),
+                title: Text(
+                  user.displayName,
+                  style: TextStyle(
+                      color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
                     user.username,
                     style: TextStyle(color: Colors.white),
                   ),
@@ -125,6 +126,19 @@ class UserResult extends StatelessWidget {
               color: Colors.white54,
             )
           ],
-        ));
+        ),
+    );
+  }
+
+  showProfile(BuildContext context, {String profileId}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            Profile(
+              profileId: profileId,
+            ),
+      ),
+    );
   }
 }

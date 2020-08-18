@@ -17,6 +17,7 @@ final GoogleSignIn googleSignIn = GoogleSignIn();
 GoogleSignInAccount googleSignInAccount;
 final usersRef = Firestore.instance.collection('users');
 final postsRef = Firestore.instance.collection('posts');
+final activityFeedRef = Firestore.instance.collection('feed');
 final commentsRef = Firestore.instance.collection("comments");
 final StorageReference storageRef = FirebaseStorage.instance.ref();
 final timestamp = DateTime.now();
@@ -179,18 +180,17 @@ class _HomeState extends State<Home> {
       body: PageView(
         children: <Widget>[
           Timeline(),
-          Scaffold(
-            body: Center(
-              child: RaisedButton(
-                child: Text("Logout"),
-                onPressed: logout,
-              ),
-            ),
-          ),
-          //ActivityFeed(),
+          ActivityFeed(),
           Upload(currentUser: currentUser),
           Search(),
-          Profile(profileId: currentUser?.id)
+          Profile(profileId: currentUser?.id),
+          Scaffold(
+              body: Center(
+            child: RaisedButton(
+              child: Text("Logout"),
+              onPressed: logout,
+            ),
+          ))
         ],
         controller: _pageController,
         onPageChanged: onPageChanged,
@@ -205,11 +205,12 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(icon: Icon(Icons.notifications_active)),
           BottomNavigationBarItem(
               icon: Icon(
-            Icons.photo_camera,
-            size: 35.0,
-          )),
+                Icons.photo_camera,
+                size: 35.0,
+              )),
           BottomNavigationBarItem(icon: Icon(Icons.search)),
           BottomNavigationBarItem(icon: Icon(Icons.account_circle)),
+          BottomNavigationBarItem(icon: Icon(Icons.cancel)),
         ],
       ),
     );

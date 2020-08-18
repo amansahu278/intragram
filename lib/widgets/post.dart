@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:intragram/models/user.dart';
 import 'package:intragram/pages/comments.dart';
 import 'package:intragram/pages/home.dart';
+import 'package:intragram/pages/profile.dart';
 import 'package:intragram/widgets/custom_image.dart';
 import 'package:intragram/widgets/progress.dart';
 
@@ -69,7 +70,6 @@ class Post extends StatefulWidget {
 }
 
 class _PostState extends State<Post> {
-
   final String currentUserId = currentUser?.id;
   final String postId;
   final String ownerId;
@@ -82,7 +82,8 @@ class _PostState extends State<Post> {
   bool isLiked;
   bool showHeart = false;
 
-  _PostState(likes, {
+  _PostState(
+    likes, {
     this.postId,
     this.ownerId,
     this.username,
@@ -91,6 +92,17 @@ class _PostState extends State<Post> {
     this.mediaUrl,
     this.likeCount,
   });
+
+  showProfile(BuildContext context, {String profileId}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Profile(
+          profileId: profileId,
+        ),
+      ),
+    );
+  }
 
   buildPostHeader() {
     return FutureBuilder(
@@ -101,15 +113,20 @@ class _PostState extends State<Post> {
         }
         User user = User.fromDocument(snapshot.data);
         return ListTile(
-          leading: CircleAvatar(
-            backgroundImage: CachedNetworkImageProvider(user.photoUrl),
-            backgroundColor: Colors.grey,
+          leading: GestureDetector(
+            onTap: () => showProfile(context, profileId: user.id),
+            child: CircleAvatar(
+              backgroundImage: CachedNetworkImageProvider(user.photoUrl),
+              backgroundColor: Colors.grey,
+            ),
           ),
           title: GestureDetector(
-              onTap: () {},
-              child: Text(user.username, style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold),)
-          ),
+              onTap: () => showProfile(context, profileId: user.id),
+              child: Text(
+                user.username,
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              )),
           subtitle: Text(location),
           trailing: IconButton(
             onPressed: () {},
@@ -127,7 +144,8 @@ class _PostState extends State<Post> {
         alignment: Alignment.center,
         children: <Widget>[
           cachedNetworkImage(mediaUrl),
-          showHeart ? Animator(
+          showHeart
+              ? Animator(
             duration: Duration(milliseconds: 300),
             tween: Tween(begin: 0.8, end: 1.0),
             curve: Curves.bounceInOut,
@@ -135,10 +153,14 @@ class _PostState extends State<Post> {
             builder: (context, anim, child) =>
                 Transform.scale(
                   scale: anim.value,
-                  child: Icon(Icons.favorite, size: 80,
-                    color: Colors.white.withOpacity(0.5),),
+                  child: Icon(
+                    Icons.favorite,
+                    size: 80,
+                    color: Colors.white.withOpacity(0.5),
+                  ),
                 ),
-          ) : Container()
+          )
+              : Container()
 //          showHeart ? AnimatorIcon(Icons.favorite, size: 80, color: Colors.red,) : Container()
         ],
       ),
@@ -151,9 +173,7 @@ class _PostState extends State<Post> {
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Padding(
-                padding: EdgeInsets.only(top: 40, left: 20.0)
-            ),
+            Padding(padding: EdgeInsets.only(top: 40, left: 20.0)),
             GestureDetector(
               onTap: handleLikePost,
               child: Icon(
@@ -162,12 +182,11 @@ class _PostState extends State<Post> {
                 color: Colors.pink,
               ),
             ),
-            Padding(
-                padding: EdgeInsets.only(right: 20.0)
-            ),
+            Padding(padding: EdgeInsets.only(right: 20.0)),
             GestureDetector(
-              onTap: () => showComments(context,
-                  postId: postId, ownerId: ownerId, mediaUrl: mediaUrl),
+              onTap: () =>
+                  showComments(context,
+                      postId: postId, ownerId: ownerId, mediaUrl: mediaUrl),
               child: Icon(
                 Icons.chat,
                 size: 28.0,
@@ -180,8 +199,11 @@ class _PostState extends State<Post> {
           children: <Widget>[
             Container(
               margin: EdgeInsets.only(left: 20, top: 5.0),
-              child: Text("$likeCount likes", style: TextStyle(
-                  color: Colors.black, fontWeight: FontWeight.bold),),
+              child: Text(
+                "$likeCount likes",
+                style:
+                TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
             )
           ],
         ),
@@ -192,15 +214,21 @@ class _PostState extends State<Post> {
             children: <Widget>[
               Container(
                 margin: EdgeInsets.only(left: 20),
-                child: Text("$username", style: TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold),),
+                child: Text(
+                  "$username",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
               ),
-              SizedBox(width: 10,),
-              Expanded(child: Text(description),)
+              SizedBox(
+                width: 10,
+              ),
+              Expanded(
+                child: Text(description),
+              )
             ],
           ),
         )
-
       ],
     );
   }
@@ -229,6 +257,7 @@ class _PostState extends State<Post> {
           .collection('userPosts')
           .document(postId)
           .updateData({'likes.$currentUserId': false});
+      removeLikeFromActivityFeed();
       setState(() {
         likeCount -= 1;
         isLiked = false;
@@ -240,6 +269,7 @@ class _PostState extends State<Post> {
           .collection('userPosts')
           .document(postId)
           .updateData({'likes.$currentUserId': true});
+      addLikeToActivityFeed();
       setState(() {
         likeCount += 1;
         isLiked = true;
@@ -256,12 +286,47 @@ class _PostState extends State<Post> {
 
   showComments(BuildContext context,
       {String postId, String ownerId, String mediaUrl}) {
-    Navigator.push(context, MaterialPageRoute(builder: (constext) {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
       return Comments(
         postId: postId,
         postOwnerId: ownerId,
         postMediaUrl: mediaUrl,
       );
     }));
+  }
+
+  void addLikeToActivityFeed() {
+//    if(currentUserId == ownerId){
+//      return;
+//    }
+    activityFeedRef
+        .document(ownerId)
+        .collection("feedItems")
+        .document(postId)
+        .setData({
+      "type": "like",
+      "username": currentUser.username,
+      "userId": currentUser.id,
+      "userProfileImage": currentUser.photoUrl,
+      "postId": postId,
+      "mediaUrl": mediaUrl,
+      "timestamp": timestamp
+    });
+  }
+
+  void removeLikeFromActivityFeed() {
+    if (currentUser.id == ownerId) {
+      return;
+    }
+    activityFeedRef
+        .document(ownerId)
+        .collection("feedItems")
+        .document(postId)
+        .get()
+        .then((doc) {
+      if (doc.exists) {
+        doc.reference.delete();
+      }
+    });
   }
 }

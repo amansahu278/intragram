@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart';
 import 'package:intragram/widgets/header.dart';
 import 'package:intragram/widgets/progress.dart';
 import 'home.dart';
@@ -76,7 +77,7 @@ class CommentsState extends State<Comments> {
   }
 
   addComment() {
-    if (_commentController.text.trim() != "")
+    if (_commentController.text.trim() != "") {
       commentsRef.document(postId).collection("comments").add({
         "username": currentUser.username,
         "comment": _commentController.text,
@@ -84,6 +85,19 @@ class CommentsState extends State<Comments> {
         "avatarUrl": currentUser.photoUrl,
         "userId": currentUser.id
       });
+      if (currentUser.id == postOwnerId) {
+        activityFeedRef.document(postOwnerId).collection('feedItems').add({
+          "type": "comment",
+          "commentData": _commentController.text,
+          "username": currentUser.username,
+          "userId": currentUser.id,
+          "userProfileImage": currentUser.photoUrl,
+          "postId": postId,
+          "mediaUrl": postMediaUrl,
+          "timestamp": timestamp
+        });
+      }
+    }
     _commentController.clear();
   }
 }
