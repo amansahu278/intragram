@@ -35,6 +35,9 @@ class _ProfileState extends State<Profile> {
   void initState() {
     super.initState();
     getProfilePosts();
+    getFollowers();
+    getFollowing();
+    checkIfFollowing();
   }
 
   getFollowers() async {
@@ -110,9 +113,11 @@ class _ProfileState extends State<Profile> {
 
   editProfile() {
     Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => EditProfile(currentUserId: currentUserId)));
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfile(currentUserId: currentUserId),
+      ),
+    );
   }
 
   buildButton({String text, Function function}) {
@@ -132,8 +137,8 @@ class _ProfileState extends State<Profile> {
             alignment: Alignment.center,
             child: Text(
               text,
-              style:
-              TextStyle(color: isFollowing ? Colors.black : Colors.white,
+              style: TextStyle(
+                  color: isFollowing ? Colors.black : Colors.white,
                   fontWeight: FontWeight.bold),
             ),
           ),
@@ -157,16 +162,24 @@ class _ProfileState extends State<Profile> {
   handleFollowUser() {
     setState(() {
       isFollowing = true;
+      followingCount++;
     });
 
-    followersRef.document(widget.profileId)
+    followersRef
+        .document(widget.profileId)
         .collection('userFollowers')
         .document(currentUserId)
         .setData({});
-    followingRef.document(currentUserId).collection("userFollowing").document(
-        widget.profileId).setData({});
-    activityFeedRef.document(widget.profileId).collection("feedItems").document(
-        currentUserId).setData({
+    followingRef
+        .document(currentUserId)
+        .collection("userFollowing")
+        .document(widget.profileId)
+        .setData({});
+    activityFeedRef
+        .document(widget.profileId)
+        .collection("feedItems")
+        .document(currentUserId)
+        .setData({
       "type": "follow",
       "ownerId": widget.profileId,
       "username": currentUser.username,
@@ -179,22 +192,33 @@ class _ProfileState extends State<Profile> {
   handleUnfollowUser() {
     setState(() {
       isFollowing = false;
+      followingCount--;
     });
-    followersRef.document(widget.profileId).collection('userFollowers')
-        .document(currentUserId).get()
+    followersRef
+        .document(widget.profileId)
+        .collection('userFollowers')
+        .document(currentUserId)
+        .get()
         .then((doc) {
       if (doc.exists) {
         doc.reference.delete();
       }
     });
-    followingRef.document(currentUserId).collection("userFollowing").document(
-        widget.profileId).get().then((doc) {
+    followingRef
+        .document(currentUserId)
+        .collection("userFollowing")
+        .document(widget.profileId)
+        .get()
+        .then((doc) {
       if (doc.exists) {
         doc.reference.delete();
       }
     });
-    activityFeedRef.document(widget.profileId).collection("feedItems").document(
-        currentUserId).setData({
+    activityFeedRef
+        .document(widget.profileId)
+        .collection("feedItems")
+        .document(currentUserId)
+        .setData({
       "type": "follow",
       "ownerId": widget.profileId,
       "username": currentUser.username,
@@ -341,7 +365,7 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar:
-      header(context, titleText: user == null ? "Profile" : user.username),
+          header(context, titleText: user == null ? "Profile" : user.username),
       body: ListView(
         children: <Widget>[
           buildProfileHeader(),
@@ -362,16 +386,20 @@ class _ProfileState extends State<Profile> {
       children: <Widget>[
         IconButton(
           icon: Icon(Icons.grid_on),
-          color: postOrientation == "grid" ? Theme
+          color: postOrientation == "grid"
+              ? Theme
               .of(context)
-              .primaryColor : Colors.grey,
+              .primaryColor
+              : Colors.grey,
           onPressed: () => setPostOrientation("grid"),
         ),
         IconButton(
           icon: Icon(Icons.list),
-          color: postOrientation == "list" ? Theme
+          color: postOrientation == "list"
+              ? Theme
               .of(context)
-              .primaryColor : Colors.grey,
+              .primaryColor
+              : Colors.grey,
           onPressed: () => setPostOrientation("list"),
         )
       ],

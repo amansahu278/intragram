@@ -44,6 +44,7 @@ class _EditProfileState extends State<EditProfile> {
 
   logout() async {
     await googleSignIn.signOut();
+    print("Signing out\n");
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => Home()));
   }

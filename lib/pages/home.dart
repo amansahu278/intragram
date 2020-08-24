@@ -14,7 +14,6 @@ import 'package:intragram/pages/upload.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn googleSignIn = GoogleSignIn();
-GoogleSignInAccount googleSignInAccount;
 final usersRef = Firestore.instance.collection('users');
 final postsRef = Firestore.instance.collection('posts');
 final activityFeedRef = Firestore.instance.collection('feed');
@@ -35,45 +34,55 @@ class _HomeState extends State<Home> {
   PageController _pageController;
   int pageIndex = 0;
 
-  login() async {
-    googleSignInAccount = await googleSignIn.signIn();
+  logout() async {
+    await googleSignIn.signOut();
+    print("Signing out\n");
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => Home()));
   }
 
-  logout() {
-    _auth.signOut();
-    googleSignIn.signOut();
+  Future<FirebaseUser> _handleSignIn() async {
+    FirebaseUser user;
+
+    bool isSignedIn = await googleSignIn.isSignedIn();
+    print(isSignedIn);
+    if (isSignedIn) {
+      user = await _auth.currentUser();
+    } else {
+      final GoogleSignInAccount googleUser = await googleSignIn.signIn();
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.getCredential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+      user = (await _auth.signInWithCredential(credential)).user;
+    }
+    return user;
   }
 
-  Future<String> signInWithGoogle() async {
-//    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
-    final GoogleSignInAuthentication googleSignInAuthentication =
-        await googleSignInAccount.authentication;
-
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
-      accessToken: googleSignInAuthentication.accessToken,
-      idToken: googleSignInAuthentication.idToken,
-    );
-
-    final AuthResult authResult = await _auth.signInWithCredential(credential);
-    final FirebaseUser user = authResult.user;
-
-    assert(!user.isAnonymous);
-    assert(await user.getIdToken() != null);
-
-    final FirebaseUser currentUser = await _auth.currentUser();
-    assert(user.uid == currentUser.uid);
-
-    return 'signInWithGoogle succeeded: $user';
+  void signInWithGoogle() async {
+    FirebaseUser user = await _handleSignIn();
+//    handleSignIn(user);
+    print(user);
+    if (user != null) {
+      print("creating");
+      createUserInFirestore();
+      setState(() {
+        isAuth = true;
+      });
+    }
   }
 
   createUserInFirestore() async {
     //Check if user exists
-    await signInWithGoogle();
     GoogleSignInAccount user = googleSignIn.currentUser;
+    print("User is $user");
     DocumentSnapshot doc = await usersRef.document(user.id).get();
-
+    print("doc is ${doc.data}");
     //If doesnt exist, then redirect to create account page
-    if (doc == null) {
+    if (doc.data == null) {
       //get username from create account, use it to make a new document in users collection
       final String username = await Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => CreateAccount()));
@@ -112,20 +121,20 @@ class _HomeState extends State<Home> {
     super.initState();
     _pageController = PageController();
 
-    // When user signs in
-    googleSignIn.onCurrentUserChanged.listen((account) {
-      print(account);
-      handleSignIn(account);
-    }, onError: (err) {
-      print('Error: $err');
-    });
-
-    //Reauthenticate
-    googleSignIn.signInSilently(suppressErrors: false).then((account) {
-      handleSignIn(account);
-    }, onError: (err) {
-      print('Error: $err');
-    });
+//    // When user signs in
+//    googleSignIn.onCurrentUserChanged.listen((account) {
+//      print(account);
+//      handleSignIn(account);
+//    }, onError: (err) {
+//      print('Error: $err');
+//    });
+//
+//    //Reauthenticate
+//    googleSignIn.signInSilently(suppressErrors: false).then((account) {
+//      handleSignIn(account);
+//    }, onError: (err) {
+//      print('Error: $err');
+//    });
   }
 
   @override
@@ -158,7 +167,7 @@ class _HomeState extends State<Home> {
                   fontFamily: "Signatra", fontSize: 90.0, color: Colors.white),
             ),
             GestureDetector(
-              onTap: login,
+              onTap: signInWithGoogle,
               child: Container(
                 width: 260.0,
                 height: 60.0,
